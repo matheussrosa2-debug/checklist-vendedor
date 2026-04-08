@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Checklist Diário — Vendedor</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#ffffff;--bg2:#f7f7f5;--bg3:#f0efec;
+  --text:#1a1a1a;--text2:#6b6b6b;--text3:#9a9a9a;
+  --border:rgba(0,0,0,0.12);--border2:rgba(0,0,0,0.22);
+  --green:#1D9E75;--green-dark:#0F6E56;
+  --radius:8px;--radius-lg:12px;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#1e1e1e;--bg2:#2a2a2a;--bg3:#242424;
+    --text:#f0f0f0;--text2:#a0a0a0;--text3:#666;
+    --border:rgba(255,255,255,0.12);--border2:rgba(255,255,255,0.22);
+  }
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg3);color:var(--text);min-height:100vh}
+.container{max-width:700px;margin:0 auto;padding:24px 16px 60px}
+h1{font-size:20px;font-weight:700;color:var(--text)}
+.subtitle{font-size:13px;color:var(--text2);margin-top:3px}
+.tabs{display:flex;gap:0;margin:20px 0 0;border-bottom:1px solid var(--border)}
+.tab{font-size:13px;padding:9px 18px;cursor:pointer;color:var(--text2);border:none;background:none;border-bottom:2.5px solid transparent;margin-bottom:-1px;font-family:inherit}
+.tab.active{color:var(--text);border-bottom:2.5px solid var(--green);font-weight:700}
+.tab:hover:not(.active){color:var(--text)}
+.view{display:none;padding-top:20px}.view.active{display:block}
+.top-bar{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+.pbar-wrap{background:var(--bg2);border-radius:100px;height:7px;width:170px;overflow:hidden;border:1px solid var(--border)}
+.pbar{height:7px;border-radius:100px;background:var(--green);transition:width .3s}
+.plabel{font-size:12px;color:var(--text2);margin-top:4px;text-align:right}
+.section{margin-bottom:16px}
+.sec-hd{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+.sec-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sec-lbl{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em}
+.sec-time{font-size:11px;color:var(--text3);background:var(--bg2);border:1px solid var(--border);border-radius:100px;padding:2px 9px}
+.sec-cnt{margin-left:auto;font-size:11px;color:var(--text3)}
+.task{display:flex;align-items:flex-start;gap:11px;padding:10px 14px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg);margin-bottom:5px;cursor:pointer;transition:background .15s;user-select:none}
+.task:hover{background:var(--bg2)}
+.task.done{opacity:.45}
+.task.done .t-text{text-decoration:line-through;color:var(--text2)}
+.task.ct{border-left:3px solid #D4537E;border-radius:0 var(--radius) var(--radius) 0}
+.chk{width:19px;height:19px;border-radius:5px;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:background .15s,border-color .15s}
+.chk.on{background:var(--green);border-color:var(--green)}
+.chk.on::after{content:'';display:block;width:5px;height:3px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg);margin:2px 0 0 2px}
+.t-text{font-size:14px;color:var(--text);line-height:1.5}
+.t-sub{font-size:12px;color:var(--text3);margin-top:2px}
+.badge-ct{font-size:10px;font-weight:700;color:#993556;background:#FBEAF0;border-radius:100px;padding:1px 7px;display:inline-block;margin-left:6px;vertical-align:middle}
+.card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:12px}
+.card p{font-size:14px;color:var(--text2);margin-bottom:10px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+input[type=text],input[type=password]{font-size:14px;padding:9px 13px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg);color:var(--text);outline:none;font-family:inherit}
+input[type=text]:focus,input[type=password]:focus{border-color:var(--green)}
+select{font-size:13px;padding:7px 11px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg);color:var(--text);font-family:inherit}
+.btn{font-size:13px;font-weight:700;padding:9px 18px;border-radius:var(--radius);cursor:pointer;font-family:inherit;border:none;transition:background .15s}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:var(--green-dark)}
+.btn-outline{background:none;border:1px solid var(--border);color:var(--text2)}.btn-outline:hover{background:var(--bg2)}
+.btn-red{background:none;border:1px solid #F09595;color:#A32D2D;font-size:12px;padding:5px 11px}.btn-red:hover{background:#FCEBEB}
+.finish-bar{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 18px;margin-top:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.finish-bar p{font-size:14px;font-weight:700;color:var(--text)}
+.finish-bar span{font-size:13px;color:var(--text2)}
+.legend{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);margin-bottom:14px}
+.legend-bar{width:14px;height:3px;background:#D4537E;border-radius:2px}
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px}
+@media(min-width:500px){.stats-grid{grid-template-columns:repeat(4,1fr)}}
+.stat-card{background:var(--bg2);border-radius:var(--radius);padding:14px;text-align:center}
+.stat-val{font-size:22px;font-weight:700;color:var(--text)}
+.stat-lbl{font-size:12px;color:var(--text2);margin-top:3px}
+.hist-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:7px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.hist-avatar{width:36px;height:36px;border-radius:50%;background:#E6F1FB;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#185FA5;flex-shrink:0}
+.hist-name{font-size:14px;font-weight:700;color:var(--text)}
+.hist-date{font-size:12px;color:var(--text2)}
+.hist-pct{font-size:18px;font-weight:700;color:var(--text);text-align:right}
+.hist-tasks{font-size:12px;color:var(--text2)}
+.pill-full{font-size:11px;padding:3px 9px;border-radius:100px;background:#E1F5EE;color:#0F6E56;font-weight:700}
+.pill-part{font-size:11px;padding:3px 9px;border-radius:100px;background:#FAEEDA;color:#854F0B;font-weight:700}
+.hist-empty{font-size:14px;color:var(--text3);text-align:center;padding:40px 0}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.msg-ok{font-size:12px;padding:6px 12px;border-radius:var(--radius);background:#E1F5EE;color:#0F6E56;margin-top:8px}
+.msg-err{font-size:12px;padding:6px 12px;border-radius:var(--radius);background:#FCEBEB;color:#A32D2D;margin-top:8px}
+.loading{font-size:13px;color:var(--text3);padding:20px 0;text-align:center}
+.sync-badge{font-size:11px;padding:3px 9px;border-radius:100px;font-weight:700}
+.sync-ok{background:#E1F5EE;color:#0F6E56}
+.sync-err{background:#FCEBEB;color:#A32D2D}
+.sync-ing{background:#FAEEDA;color:#854F0B}
+.online-bar{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.dot-green{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0}
+.dot-red{width:7px;height:7px;border-radius:50%;background:#E24B4A;flex-shrink:0}
+.realtime-badge{font-size:11px;color:var(--text3)}
+</style>
+</head>
+<body>
+<div class="container">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+    <div>
+      <h1>Checklist do vendedor</h1>
+      <p class="subtitle" id="date-label"></p>
+    </div>
+    <div id="sync-status"></div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('checklist')">Checklist do dia</button>
+    <button class="tab" onclick="switchTab('historico')">Histórico</button>
+    <button class="tab" onclick="switchTab('gestor')">Painel do gestor</button>
+  </div>
+  <div id="view-checklist" class="view active"></div>
+  <div id="view-historico" class="view"></div>
+  <div id="view-gestor" class="view"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FIREBASE SDK
+════════════════════════════════════════════════════════ -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+/* ═══════════════════════════════════════════════════════
+   ⚙️  COLE AQUI O SEU firebaseConfig
+   (substitua o bloco abaixo pelas suas credenciais)
+════════════════════════════════════════════════════════ */
+const firebaseConfig = {
+  apiKey: "AIzaSyD5OtVkJ7tu0QwWX7PuaODCnQGBvPjqmDw",
+  authDomain: "checklist-jm.firebaseapp.com",
+  projectId: "checklist-jm",
+  storageBucket: "checklist-jm.firebasestorage.app",
+  messagingSenderId: "951139468692",
+  appId: "1:951139468692:web:7fda45f5d2320862e0fb81",
+  measurementId: "G-W7L2Y87CRV"
+};
+/* ══════════════════════════════════════════════════════ */
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ── Dados do checklist ───────────────────────────────
+const ADMIN_PASS = "gestor2024"; // altere a senha aqui
+
+const WEEKDAY = [
+  {id:'ab',label:'Chegada e abertura',color:'#185FA5',time:'08:00 – 08:30',tasks:[
+    {id:'a1',text:'Chegar no horário estabelecido',sub:'Pontualidade e prontidão'},
+    {id:'a2',text:'Verificar aparência e uniforme',sub:'Apresentação pessoal impecável'},
+    {id:'a3',text:'Organizar e limpar o espaço de trabalho',sub:'Balcão, prateleiras e área de atendimento'},
+    {id:'a4',text:'Conferir estoque e reposição das vitrines',sub:'Produtos bem expostos e etiquetados'},
+    {id:'a5',text:'Verificar metas do dia',sub:'Alinhar com supervisor ou painel de vendas'},
+    {id:'a6',text:'Gravar stories de abertura',sub:'Chegada, ambiente preparado e boas-vindas',ct:true},
+    {id:'a7',text:'Postar no grupo VIP — bom dia e novidades',sub:'Engajar clientes com antecipação de ofertas',ct:true},
+  ]},
+  {id:'mn',label:'Manhã — atendimento e prospecção',color:'#0F6E56',time:'08:30 – 12:00',tasks:[
+    {id:'m1',text:'Revisar carteira de clientes pendentes',sub:'Ligações de retorno, orçamentos em aberto'},
+    {id:'m2',text:'Fazer contatos proativos (ligações ou mensagens)',sub:'Mínimo 3 clientes por turno'},
+    {id:'m3',text:'Registrar todos os atendimentos no sistema',sub:'CRM ou planilha de controle'},
+    {id:'m4',text:'Checar e responder mensagens (WhatsApp, e-mail)',sub:'Tempo de resposta máx. 30 min'},
+    {id:'m5',text:'Gravar stories de produto ou dica da manhã',sub:'Destaque um produto, promoção ou curiosidade',ct:true},
+    {id:'m6',text:'Postar no grupo VIP — oferta ou dica exclusiva',sub:'Conteúdo que só o grupo recebe',ct:true},
+  ]},
+  {id:'td',label:'Tarde — foco em conversão',color:'#854F0B',time:'13:00 – 17:00',tasks:[
+    {id:'t1',text:'Atualizar pipeline de vendas',sub:'Mover oportunidades conforme andamento'},
+    {id:'t2',text:'Enviar propostas ou orçamentos pendentes',sub:'Priorizar os mais quentes'},
+    {id:'t3',text:'Realizar follow-up com clientes',sub:'Anotar resultado de cada contato'},
+    {id:'t4',text:'Conferir pedidos e confirmar entregas/prazos',sub:'Evitar surpresas no pós-venda'},
+    {id:'t5',text:'Identificar oportunidades de upsell ou cross-sell',sub:'Sugerir itens complementares'},
+    {id:'t6',text:'Gravar stories da tarde — bastidor ou promoção',sub:'Depoimento de cliente, produto em uso',ct:true},
+    {id:'t7',text:'Postar no grupo VIP — lembrete ou urgência',sub:'Reforçar oferta do dia ou prazo',ct:true},
+  ]},
+  {id:'fc',label:'Fechamento e encerramento',color:'#533489',time:'17:00 – 18:00',tasks:[
+    {id:'f1',text:'Registrar total de vendas do dia',sub:'Comparar com meta diária'},
+    {id:'f2',text:'Atualizar anotações sobre clientes',sub:'Garantir continuidade no próximo dia'},
+    {id:'f3',text:'Organizar o espaço para o próximo dia',sub:'Deixar tudo pronto e em ordem'},
+    {id:'f4',text:'Repassar pendências ao colega ou supervisor',sub:'Passagem de turno sem ruído'},
+    {id:'f5',text:'Gravar stories de encerramento',sub:'Resultado do dia, agradecimento e prévia de amanhã',ct:true},
+    {id:'f6',text:'Postar no grupo VIP — resumo e teaser de amanhã',sub:'Manter engajamento e criar expectativa',ct:true},
+    {id:'f7',text:'Refletir: o que funcionou bem hoje?',sub:'Uma melhoria para amanhã'},
+  ]}
+];
+
+const SATURDAY = [
+  {id:'sab_ab',label:'Chegada e abertura',color:'#185FA5',time:'08:00 – 08:20',tasks:[
+    {id:'s_a1',text:'Chegar no horário e verificar aparência',sub:'Pontualidade e apresentação pessoal'},
+    {id:'s_a2',text:'Organizar espaço e conferir vitrines',sub:'Ambiente pronto antes de abrir'},
+    {id:'s_a3',text:'Verificar meta do sábado',sub:'Geralmente meta reduzida — alinhar com gestor'},
+    {id:'s_a4',text:'Gravar stories de abertura do sábado',sub:'Clima descontraído, destaque do fim de semana',ct:true},
+    {id:'s_a5',text:'Postar no grupo VIP — bom sábado e oferta especial',sub:'Oferta exclusiva de fim de semana',ct:true},
+  ]},
+  {id:'sab_mn',label:'Manhã — atendimento',color:'#0F6E56',time:'08:20 – 11:30',tasks:[
+    {id:'s_m1',text:'Atender clientes e priorizar conversão',sub:'Sábado tem fluxo diferente — foco no presencial'},
+    {id:'s_m2',text:'Retornar mensagens e contatos pendentes da semana',sub:'Limpar fila antes de fechar'},
+    {id:'s_m3',text:'Registrar atendimentos no sistema',sub:'CRM ou planilha'},
+    {id:'s_m4',text:'Gravar stories de produto ou promoção relâmpago',sub:'Criar urgência para o fim de semana',ct:true},
+    {id:'s_m5',text:'Postar no grupo VIP — lembrete de horário reduzido',sub:'Informar horário de fechamento do sábado',ct:true},
+  ]},
+  {id:'sab_fc',label:'Fechamento do sábado',color:'#533489',time:'11:30 – 12:00',tasks:[
+    {id:'s_f1',text:'Registrar vendas do sábado',sub:'Comparar com meta do dia'},
+    {id:'s_f2',text:'Organizar espaço para segunda-feira',sub:'Deixar tudo pronto para reabertura'},
+    {id:'s_f3',text:'Anotar pendências da semana',sub:'O que precisa ser resolvido na segunda'},
+    {id:'s_f4',text:'Gravar stories de encerramento do fim de semana',sub:'Agradecimento e prévia da semana',ct:true},
+    {id:'s_f5',text:'Postar no grupo VIP — até segunda!',sub:'Mensagem de encerramento e expectativa da semana',ct:true},
+  ]}
+];
+
+// ── Helpers ──────────────────────────────────────────
+const DAYS=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const MONTHS=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+
+function isSaturday(){ return new Date().getDay()===6; }
+function getSections(){ return isSaturday()?SATURDAY:WEEKDAY; }
+function allIds(secs){ return secs.flatMap(s=>s.tasks.map(t=>t.id)); }
+function getTodayKey(){
+  const d=new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function formatDate(dateStr,isSat){
+  const [y,m,d]=dateStr.split('-');
+  const obj=new Date(y,m-1,d);
+  return `${DAYS[obj.getDay()]}, ${d} ${MONTHS[m-1]}/${y}${isSat?' (sáb)':''}`;
+}
+function setSyncStatus(state){
+  const el=document.getElementById('sync-status');
+  if(!el)return;
+  if(state==='ok') el.innerHTML='<span class="sync-badge sync-ok">● salvo na nuvem</span>';
+  else if(state==='saving') el.innerHTML='<span class="sync-badge sync-ing">● salvando...</span>';
+  else el.innerHTML='<span class="sync-badge sync-err">● sem conexão</span>';
+}
+
+// ── Estado local (cache) ─────────────────────────────
+let vendorName = localStorage.getItem('vc_vendor') || '';
+let todayChecked = {};
+let adminUnlocked = false;
+let historyCache = [];
+let histUnsubscribe = null;
+
+// ── Firestore helpers ────────────────────────────────
+function todayDocId(vendor){
+  return `${getTodayKey()}__${vendor.replace(/\s+/g,'_')}`;
+}
+
+async function loadTodayFromFirestore(vendor){
+  try{
+    const ref = doc(db,'checklists', todayDocId(vendor));
+    const snap = await getDoc(ref);
+    if(snap.exists()) todayChecked = snap.data().checked || {};
+    else todayChecked = {};
+  }catch(e){ todayChecked = {}; }
+}
+
+async function saveTodayToFirestore(vendor, checked){
+  setSyncStatus('saving');
+  try{
+    const ref = doc(db,'checklists', todayDocId(vendor));
+    await setDoc(ref,{
+      vendor, date: getTodayKey(),
+      checked, updatedAt: new Date().toISOString(),
+      isSat: isSaturday()
+    },{merge:true});
+    setSyncStatus('ok');
+  }catch(e){ setSyncStatus('err'); }
+}
+
+async function finishDay(){
+  const secs = getSections();
+  const total = allIds(secs).length;
+  const done = allIds(secs).filter(id=>todayChecked[id]).length;
+  const pct = Math.round(done/total*100);
+  const entry = {
+    vendor: vendorName, date: getTodayKey(),
+    done, total, pct, isSat: isSaturday(),
+    finishedAt: new Date().toISOString()
+  };
+  setSyncStatus('saving');
+  try{
+    const histRef = doc(db,'history', todayDocId(vendorName));
+    await setDoc(histRef, entry);
+    const todayRef = doc(db,'checklists', todayDocId(vendorName));
+    await deleteDoc(todayRef);
+    todayChecked = {};
+    setSyncStatus('ok');
+    renderChecklist();
+    if(histUnsubscribe) histUnsubscribe();
+    subscribeHistory();
+  }catch(e){ setSyncStatus('err'); alert('Erro ao salvar. Verifique a conexão.'); }
+}
+
+async function deleteRecord(docId){
+  try{
+    await deleteDoc(doc(db,'history',docId));
+  }catch(e){ alert('Erro ao apagar.'); }
+}
+
+function subscribeHistory(){
+  const q = query(collection(db,'history'), orderBy('finishedAt','desc'));
+  histUnsubscribe = onSnapshot(q, snap=>{
+    historyCache = snap.docs.map(d=>({...d.data(), _id:d.id}));
+    renderHistorico();
+    renderGestor();
+  }, ()=>{ setSyncStatus('err'); });
+}
+
+// ── Render: Checklist ────────────────────────────────
+function renderChecklist(){
+  const el = document.getElementById('view-checklist');
+  const secs = getSections();
+  const total = allIds(secs).length;
+  const done = allIds(secs).filter(id=>todayChecked[id]).length;
+  const pct = Math.round(done/total*100);
+  const isSat = isSaturday();
+  let h = '';
+
+  if(!vendorName){
+    h += `<div class="card"><p>Qual é o seu nome? Isso identifica seus registros diários.</p>
+      <div class="row">
+        <input type="text" id="inp-name" placeholder="Seu nome" style="flex:1;min-width:160px"/>
+        <button class="btn btn-green" onclick="confirmName()">Confirmar</button>
+      </div></div>`;
+  } else {
+    h += `<div class="top-bar">
+      <div><strong style="font-size:16px">Olá, ${vendorName}${isSat?' — sábado':''}</strong></div>
+      <div>
+        <div class="pbar-wrap"><div class="pbar" style="width:${pct}%"></div></div>
+        <div class="plabel">${done} de ${total} tarefas</div>
+      </div>
+    </div>
+    <div class="legend"><div class="legend-bar"></div> tarefas de conteúdo (stories + grupo vip)</div>`;
+
+    secs.forEach(sec=>{
+      const secDone = sec.tasks.filter(t=>todayChecked[t.id]).length;
+      h += `<div class="section"><div class="sec-hd">
+        <span class="sec-dot" style="background:${sec.color}"></span>
+        <span class="sec-lbl">${sec.label}</span>
+        <span class="sec-time">${sec.time}</span>
+        <span class="sec-cnt">${secDone}/${sec.tasks.length}</span>
+      </div>`;
+      sec.tasks.forEach(t=>{
+        const chk = !!todayChecked[t.id];
+        h += `<div class="task${chk?' done':''}${t.ct?' ct':''}" onclick="toggleTask('${t.id}')">
+          <div class="chk${chk?' on':''}"></div>
+          <div>
+            <div class="t-text">${t.text}${t.ct?'<span class="badge-ct">conteúdo</span>':''}</div>
+            <div class="t-sub">${t.sub}</div>
+          </div>
+        </div>`;
+      });
+      h += `</div>`;
+    });
+
+    h += `<div class="finish-bar">
+      <div><p>Encerrar o dia?</p><span>${done}/${total} tarefas (${pct}%)</span></div>
+      <button class="btn btn-green" onclick="window.finishDay()">Registrar e encerrar dia</button>
+    </div>
+    <div style="text-align:right;margin-top:10px;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">
+      <button class="btn btn-outline" onclick="window.changeVendor()">Trocar vendedor</button>
+      <button class="btn btn-outline" onclick="window.resetToday()">Reiniciar checklist</button>
+    </div>`;
+  }
+  el.innerHTML = h;
+}
+
+// ── Render: Histórico ────────────────────────────────
+function renderHistorico(){
+  const el = document.getElementById('view-historico');
+  const nameF = (document.getElementById('hf-name')||{value:''}).value.trim().toLowerCase();
+  const periodF = (document.getElementById('hf-period')||{value:''}).value;
+  let filtered = historyCache;
+  if(nameF) filtered = filtered.filter(r=>r.vendor.toLowerCase().includes(nameF));
+  if(periodF){
+    const cutoff = new Date(); cutoff.setDate(cutoff.getDate()-parseInt(periodF));
+    filtered = filtered.filter(r=>{ const[y,m,d]=r.date.split('-'); return new Date(y,m-1,d)>=cutoff; });
+  }
+
+  let h = `<div class="top-bar"><div><strong style="font-size:16px">Histórico de registros</strong>
+    <p class="subtitle">Todos os dias finalizados</p></div></div>
+  <div class="filters">
+    <input type="text" id="hf-name" placeholder="Filtrar por vendedor" oninput="renderHistorico()" style="width:180px" value="${nameF}"/>
+    <select id="hf-period" onchange="renderHistorico()">
+      <option value="">Todos os períodos</option>
+      <option value="7"${periodF==='7'?' selected':''}>Últimos 7 dias</option>
+      <option value="30"${periodF==='30'?' selected':''}>Últimos 30 dias</option>
+    </select>
+  </div>`;
+
+  if(!filtered.length){ h += `<div class="hist-empty">Nenhum registro encontrado</div>`; }
+  else filtered.forEach(r=>{
+    const initials = r.vendor.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    const pill = r.pct===100?'<span class="pill-full">completo</span>':'<span class="pill-part">'+r.pct+'%</span>';
+    h += `<div class="hist-card">
+      <div class="hist-avatar">${initials}</div>
+      <div style="flex:1;min-width:0">
+        <div class="hist-name">${r.vendor}</div>
+        <div class="hist-date">${formatDate(r.date,r.isSat)}</div>
+      </div>
+      <div style="text-align:right;margin-right:8px">
+        <div class="hist-pct">${r.pct}%</div>
+        <div class="hist-tasks">${r.done}/${r.total} tarefas</div>
+      </div>
+      ${pill}
+    </div>`;
+  });
+  el.innerHTML = h;
+}
+
+// ── Render: Gestor ───────────────────────────────────
+function renderGestor(){
+  const el = document.getElementById('view-gestor');
+  let h = `<div class="top-bar"><div><strong style="font-size:16px">Painel do gestor</strong>
+    <p class="subtitle">Visão geral em tempo real</p></div></div>`;
+
+  if(!adminUnlocked){
+    h += `<div class="card"><p>Área restrita. Digite a senha para acessar.</p>
+      <div class="row">
+        <input type="password" id="admin-inp" placeholder="Senha do gestor" style="flex:1;min-width:160px" onkeydown="if(event.key==='Enter')tryAdmin()"/>
+        <button class="btn btn-green" onclick="tryAdmin()">Entrar</button>
+      </div><div id="admin-msg"></div></div>`;
+    el.innerHTML = h; return;
+  }
+
+  const hist = historyCache;
+  const total = hist.length;
+  const completos = hist.filter(r=>r.pct===100).length;
+  const avgPct = total ? Math.round(hist.reduce((a,r)=>a+r.pct,0)/total) : 0;
+  const vendors = [...new Set(hist.map(r=>r.vendor))];
+
+  h += `<div style="text-align:right;margin-bottom:14px"><button class="btn btn-outline" onclick="adminUnlocked=false;renderGestor()">Sair</button></div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-val">${total}</div><div class="stat-lbl">Dias registrados</div></div>
+    <div class="stat-card"><div class="stat-val">${completos}</div><div class="stat-lbl">Dias 100% completos</div></div>
+    <div class="stat-card"><div class="stat-val">${avgPct}%</div><div class="stat-lbl">Média geral</div></div>
+    <div class="stat-card"><div class="stat-val">${vendors.length}</div><div class="stat-lbl">Vendedores</div></div>
+  </div>`;
+
+  if(!hist.length){ h += `<div class="hist-empty">Nenhum registro ainda</div>`; }
+  else{
+    h += `<div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:8px">Todos os registros</div>`;
+    hist.forEach(r=>{
+      const initials = r.vendor.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+      const pill = r.pct===100?'<span class="pill-full">completo</span>':'<span class="pill-part">'+r.pct+'%</span>';
+      h += `<div class="hist-card">
+        <div class="hist-avatar">${initials}</div>
+        <div style="flex:1;min-width:0">
+          <div class="hist-name">${r.vendor}</div>
+          <div class="hist-date">${formatDate(r.date,r.isSat)}</div>
+        </div>
+        <div style="text-align:right;margin-right:8px">
+          <div class="hist-pct">${r.pct}%</div>
+          <div class="hist-tasks">${r.done}/${r.total}</div>
+        </div>
+        ${pill}
+        <button class="btn btn-red" onclick="window.deleteRec('${r._id}')">Apagar</button>
+      </div>`;
+    });
+  }
+  el.innerHTML = h;
+}
+
+// ── Ações globais ────────────────────────────────────
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach((el,i)=>{
+    el.classList.toggle('active',['checklist','historico','gestor'][i]===t);
+  });
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.getElementById('view-'+t).classList.add('active');
+}
+
+window.switchTab = switchTab;
+window.renderHistorico = renderHistorico;
+
+window.confirmName = async function(){
+  const v = (document.getElementById('inp-name')||{value:''}).value.trim();
+  if(!v) return;
+  vendorName = v;
+  localStorage.setItem('vc_vendor', v);
+  await loadTodayFromFirestore(v);
+  renderChecklist();
+  setSyncStatus('ok');
+};
+
+window.toggleTask = async function(id){
+  todayChecked[id] = !todayChecked[id];
+  renderChecklist();
+  await saveTodayToFirestore(vendorName, todayChecked);
+};
+
+window.finishDay = finishDay;
+
+window.changeVendor = async function(){
+  if(!confirm('Trocar de vendedor? O checklist atual será mantido.')) return;
+  vendorName = '';
+  localStorage.removeItem('vc_vendor');
+  todayChecked = {};
+  renderChecklist();
+};
+
+window.resetToday = async function(){
+  if(!confirm('Reiniciar o checklist de hoje?')) return;
+  todayChecked = {};
+  await saveTodayToFirestore(vendorName, todayChecked);
+  renderChecklist();
+};
+
+window.tryAdmin = function(){
+  const v = (document.getElementById('admin-inp')||{value:''}).value;
+  const msg = document.getElementById('admin-msg');
+  if(v===ADMIN_PASS){ adminUnlocked=true; renderGestor(); }
+  else if(msg){ msg.className='msg-err'; msg.textContent='Senha incorreta.'; }
+};
+
+window.deleteRec = async function(docId){
+  if(!confirm('Apagar este registro permanentemente?')) return;
+  await deleteRecord(docId);
+};
+
+// ── Init ─────────────────────────────────────────────
+const now = new Date();
+document.getElementById('date-label').textContent =
+  `${DAYS[now.getDay()]}, ${now.getDate()} de ${MONTHS[now.getMonth()]} de ${now.getFullYear()}`;
+
+setSyncStatus('saving');
+
+(async()=>{
+  if(vendorName){
+    await loadTodayFromFirestore(vendorName);
+    setSyncStatus('ok');
+  } else {
+    setSyncStatus('ok');
+  }
+  renderChecklist();
+  subscribeHistory();
+})();
+</script>
+</body>
+</html>
